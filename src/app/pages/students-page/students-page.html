@@ -1,3 +1,4 @@
+
 <!-- =====================================================================
      FILE: pages/students-page/students-page.html
      Read this page top to bottom: it matches the Figma frame top to bottom.
@@ -85,9 +86,8 @@
        [student]="s" passes the data into the card's input(). -->
   <div class="grid" aria-label="Student directory">
     @for (s of visibleStudents(); track s.id) {
-      <!-- STUDENT CARD GOES HERE -->
-
-      <h2>{{ s.name }}</h2>
+      <!-- STUDENT CARD COMPONENT -->
+      <app-student-card [student]="s" />
     }
   </div>
 }
