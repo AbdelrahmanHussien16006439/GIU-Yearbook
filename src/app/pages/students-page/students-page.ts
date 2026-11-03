@@ -1,25 +1,17 @@
 
-/* =====================================================================
-   FILE: pages/students-page/students-page.ts
-   WHAT: The landing page: title, filters and the grid of student cards.
-   FIGMA: Frame "Class of 2028 · Student directory".
+/*
+FILE: pages/students-page/students-page.ts
+WHAT: Student directory using NgRx state management.
+WHY: Keeps student data and filters when navigating pages.
+*/
 
-   WHAT STUDENTS PRACTISE HERE
-   1. Fetching data from a service (the fake API)
-   2. Loading / error / empty states
-   3. Filtering + sorting with signals and `computed`
-   ===================================================================== */
+import { Component, OnInit, inject } from '@angular/core';
+import { Store } from '@ngrx/store';
 
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
-
-import { Student } from '../../models/student.model';
-import { StudentService } from '../../services/student.service';
-
-// STEP 11: Import our new Student Card component.
 import { StudentCard } from '../../components/student-card/student-card';
-
-// A type for the sort dropdown. Only these two values are allowed.
-type SortMode = 'featured' | 'name';
+import * as StudentsActions from '../../store/students.actions';
+import * as StudentsSelectors from '../../store/students.selectors';
+import { SortMode } from '../../store/students.actions';
 
 @Component({
   selector: 'app-student-page',
@@ -29,89 +21,110 @@ type SortMode = 'featured' | 'name';
 })
 export class StudentsPage implements OnInit {
 
-  // Ask Angular for the service.
-  private readonly studentService = inject(StudentService);
+  // Connect to the shared NgRx store
+  private readonly store = inject(Store);
 
-  // STATE = data that can change while the page is open.
-  protected readonly students = signal<Student[]>([]);
-  protected readonly loading = signal(true);
-  protected readonly errorMessage = signal('');
-  protected readonly searchText = signal('');
-  protected readonly selectedFaculty = signal('all');
-  protected readonly sortBy = signal<SortMode>('featured');
-
-  // DERIVED STATE: faculties for the dropdown.
-  protected readonly faculties = computed(() =>
-    [...new Set(this.students().map((s) => s.faculty))].sort(),
-  );
-
-  // Filter and sort the displayed students.
-  protected readonly visibleStudents = computed(() => {
-    const text = this.searchText().trim().toLowerCase();
-    const faculty = this.selectedFaculty();
-
-    const filtered = this.students().filter(
-      (s) =>
-        s.name.toLowerCase().includes(text) &&
-        (faculty === 'all' || s.faculty === faculty),
+  // Read store state as Angular signals
+  protected readonly students =
+    this.store.selectSignal(
+      StudentsSelectors.selectAllStudents
     );
 
-    return this.sortBy() === 'name'
-      ? filtered.sort((a, b) => a.name.localeCompare(b.name))
-      : filtered.sort(
-          (a, b) =>
-            Number(b.featured) - Number(a.featured) ||
-            a.id - b.id,
-        );
-  });
+  protected readonly loading =
+    this.store.selectSignal(
+      StudentsSelectors.selectLoading
+    );
 
-  // Counter for total students.
-  protected readonly totalLabel = computed(() =>
-    String(this.students().length).padStart(2, '0'),
-  );
+  protected readonly errorMessage =
+    this.store.selectSignal(
+      StudentsSelectors.selectErrorMessage
+    );
 
-  // Load student data when the component starts.
+  protected readonly searchText =
+    this.store.selectSignal(
+      StudentsSelectors.selectSearchText
+    );
+
+  protected readonly selectedFaculty =
+    this.store.selectSignal(
+      StudentsSelectors.selectSelectedFaculty
+    );
+
+  protected readonly sortBy =
+    this.store.selectSignal(
+      StudentsSelectors.selectSortBy
+    );
+
+  protected readonly faculties =
+    this.store.selectSignal(
+      StudentsSelectors.selectFaculties
+    );
+
+  protected readonly visibleStudents =
+    this.store.selectSignal(
+      StudentsSelectors.selectVisibleStudents
+    );
+
+  protected readonly totalLabel =
+    this.store.selectSignal(
+      StudentsSelectors.selectTotalLabel
+    );
+
+  // Load only if data is not already available
   ngOnInit(): void {
-    this.studentService.getStudents().subscribe({
-      next: (data) => {
-        this.students.set(data);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set(
-          'We could not load the students. Please try again.',
-        );
-        this.loading.set(false);
-      },
-    });
+    const loaded =
+      this.store.selectSignal(
+        StudentsSelectors.selectLoaded
+      );
+
+    if (!loaded() && !this.loading()) {
+      this.store.dispatch(
+        StudentsActions.loadStudents()
+      );
+    }
   }
 
-  // Search input handler.
+  // Search students
   protected onSearch(event: Event): void {
-    this.searchText.set(
-      (event.target as HTMLInputElement).value,
+    const searchText =
+      (event.target as HTMLInputElement).value;
+
+    this.store.dispatch(
+      StudentsActions.setSearchText({
+        searchText
+      })
     );
   }
 
-  // Faculty dropdown handler.
+  // Filter by faculty
   protected onFacultyChange(event: Event): void {
-    this.selectedFaculty.set(
-      (event.target as HTMLSelectElement).value,
+    const faculty =
+      (event.target as HTMLSelectElement).value;
+
+    this.store.dispatch(
+      StudentsActions.setFaculty({
+        faculty
+      })
     );
   }
 
-  // Sort dropdown handler.
+  // Sort students
   protected onSortChange(event: Event): void {
-    this.sortBy.set(
-      (event.target as HTMLSelectElement).value as SortMode,
+    const sortBy =
+      (event.target as HTMLSelectElement).value as SortMode;
+
+    this.store.dispatch(
+      StudentsActions.setSortMode({
+        sortBy
+      })
     );
   }
 
-  // Scroll to the top of the page.
+  // Scroll to top
   protected scrollToTop(): void {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: 'smooth'
     });
   }
 }

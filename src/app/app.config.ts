@@ -1,23 +1,50 @@
-/* =====================================================================
-   FILE: src/app/app.config.ts
-   WHAT: Registers the "global tools" the whole app can use.
-   ===================================================================== */
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+
+/*
+FILE: src/app/app.config.ts
+WHAT: Application-wide Angular configuration.
+WHY: Registers routing, HTTP, hydration and NgRx.
+*/
+
+import {
+  ApplicationConfig,
+  provideBrowserGlobalErrorListeners
+} from '@angular/core';
+
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
+
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
 
+// NgRx
+import { provideStore } from '@ngrx/store';
+import { provideEffects } from '@ngrx/effects';
+
+// Students state
+import { studentsReducer } from './store/students.reducer';
+import { StudentsEffects } from './store/students.effects';
+
 export const appConfig: ApplicationConfig = {
   providers: [
+
+    // Global error handling
     provideBrowserGlobalErrorListeners(),
-    // STEP 1: Turn on routing (which URL shows which page).
+
+    // Routing
     provideRouter(routes),
-    // STEP 2: Turn on HttpClient. Our StudentService needs it to read
-    // the fake API now and talk to Laravel later.
-    // COMMON MISTAKE: skipping this line gives "No provider for HttpClient".
+
+    // HTTP requests
     provideHttpClient(),
 
+    // NgRx global store
+    provideStore({
+      students: studentsReducer
+    }),
+
+    // NgRx side effects
+    provideEffects(StudentsEffects),
+
+    // Angular hydration
     provideClientHydration(),
   ],
 };
