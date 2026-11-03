@@ -7,6 +7,7 @@ WHY: Matches the GIU Yearbook design.
 
 /* Main card */
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -68,4 +69,42 @@ WHY: Matches the GIU Yearbook design.
 .card:hover {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+}
+
+/* Heart button */
+.card__save {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-white);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+/* Heart hover */
+.card__save:hover {
+  color: var(--color-red);
+}
+
+/* Heart icon */
+.card__save svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Saved heart */
+.card__save--on {
+  color: var(--color-red);
+}
+
+/* Fill heart when saved */
+.card__save--on svg {
+  fill: currentColor;
 }

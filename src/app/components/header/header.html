@@ -1,7 +1,13 @@
-<!-- FILE: components/header/header.html -->
+
+<!--
+FILE: components/header/header.html
+WHAT: Displays the website header.
+WHY: Contains the logo, navigation, saved count, and login.
+-->
+
 <header class="header">
-  <!-- STEP 1: The 4px German tricolor on top (black, red, gold).
-       aria-hidden: it is decoration, so screen readers skip it. -->
+
+  <!-- German tricolor -->
   <div class="tricolor" aria-hidden="true">
     <span class="band band--ink"></span>
     <span class="band band--red"></span>
@@ -9,40 +15,65 @@
   </div>
 
   <div class="header__inner">
-    <!-- STEP 2: Logo + title. The whole block links to the home page. -->
+
+    <!-- Logo and title -->
     <a class="brand" routerLink="/" aria-label="GIU Yearbook, go to home">
+
       @if (!logoFailed()) {
-        <!-- (error) runs if the file is missing.
-             TIP: export the logo from Figma and save it as
-             public/images/giu-logo.png -->
-        <img class="brand__logo" src="images/giu-logo.png"
-             alt="German International University" (error)="logoFailed.set(true)">
+        <img
+          class="brand__logo"
+          src="images/giu-logo.png"
+          alt="German International University"
+          (error)="logoFailed.set(true)"
+        >
       } @else {
         <span class="brand__fallback">GIU</span>
       }
+
       <span class="brand__text">
         <strong>German International University</strong>
         <small>YEARBOOK / 2028</small>
       </span>
+
     </a>
 
-    <!-- STEP 3: Navigation. @for repeats the <a> once per item in navLinks.
-         `track link.path` helps Angular know which item is which.
-         COMMON MISTAKE: forgetting `track` is a compile error. -->
+    <!-- Navigation -->
     <nav class="nav" aria-label="Main">
+
       @for (link of navLinks; track link.path) {
-        <a class="nav__link" [routerLink]="link.path"
-           routerLinkActive="nav__link--active"
-           [routerLinkActiveOptions]="{ exact: link.exact }">
+        <a
+          class="nav__link"
+          [routerLink]="link.path"
+          routerLinkActive="nav__link--active"
+          [routerLinkActiveOptions]="{ exact: link.exact }"
+        >
           {{ link.label }}
         </a>
       }
+
     </nav>
 
-    <!-- STEP 4: The login button uses the shared .btn styles from styles.css. -->
-    <a class="btn header__login" routerLink="/login">
-      Student login
-      <img src="icons/arrow-up-right.svg" alt="" aria-hidden="true" />
-    </a>
+    <!-- Saved counter and login -->
+    <div class="header__actions">
+
+      <p class="header__saved" aria-live="polite">
+        Saved
+        <span class="header__count">
+          {{ saved.count() }}
+        </span>
+      </p>
+
+      <a class="btn header__login" routerLink="/login">
+        Student login
+        <img
+          src="icons/arrow-up-right.svg"
+          alt=""
+          aria-hidden="true"
+        />
+      </a>
+
+    </div>
+
   </div>
+
 </header>

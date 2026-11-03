@@ -5,10 +5,10 @@ WHAT: Defines the Student Card component.
 WHY: Receives student data and handles missing images.
 */
 
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Student } from '../../models/student.model';
-
+import { SavedService } from '../../services/saved.service';
 @Component({
   selector: 'app-student-card',
   imports: [RouterLink],
@@ -34,4 +34,17 @@ export class StudentCard {
   protected onImageError(): void {
     this.imageFailed.set(true);
   }
+  
+private readonly saved = inject(SavedService);
+
+protected readonly isSaved = computed(() =>
+  this.saved.isSaved(this.student().id)
+);
+
+protected onToggleSaved(event: Event): void {
+  event.preventDefault();
+  event.stopPropagation();
+  this.saved.toggle(this.student().id);
+}
+
 }
